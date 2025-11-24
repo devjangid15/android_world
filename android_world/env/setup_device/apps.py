@@ -68,7 +68,7 @@ def download_wootzapp_from_github() -> str:
       file_utils.get_local_tmp_directory(), "android_world", "app_data"
   )
   # GitHub release URL for Wootzapp v1.09
-  remote_url = "https://github.com/devjangid15/wootz-browser/releases/download/V-1.09/WootzApp.apk"
+  remote_url = "https://github.com/devjangid15/wootz-browser/releases/download/Offline-pages/WootzApp.apk"
   full_path = file_utils.convert_to_posix_path(cache_dir, "WootzApp.apk")
   os.makedirs(cache_dir, exist_ok=True)
   
