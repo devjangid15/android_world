@@ -62,6 +62,31 @@ def download_app_data(file_name: str) -> str:
   return full_path
 
 
+def download_wootzapp_from_github() -> str:
+  """Downloads Wootzapp APK from GitHub releases."""
+  cache_dir = file_utils.convert_to_posix_path(
+      file_utils.get_local_tmp_directory(), "android_world", "app_data"
+  )
+  # GitHub release URL for Wootzapp v1.09
+  remote_url = "https://github.com/devjangid15/wootz-browser/releases/download/V-1.09/WootzApp.apk"
+  full_path = file_utils.convert_to_posix_path(cache_dir, "WootzApp.apk")
+  os.makedirs(cache_dir, exist_ok=True)
+  
+  if not os.path.isfile(full_path):
+    logging.info("Downloading Wootzapp APK from GitHub to cache %s", cache_dir)
+    response = requests.get(remote_url)
+    if response.status_code == 200:
+      with open(full_path, "wb") as file:
+        file.write(response.content)
+    else:
+      raise RuntimeError(
+          f"Failed to download Wootzapp APK from {remote_url}, status code:"
+          f" {response.status_code}"
+      )
+  else:
+    logging.info("Wootzapp APK already exists in cache %s", cache_dir)
+  return full_path
+
 class AppSetup(abc.ABC):
   """Abstract class for setting up an app."""
 
@@ -765,4 +790,39 @@ class RetroMusicApp(AppSetup):
 
     adb_utils.launch_app(cls.app_name, env.controller)
     time.sleep(2.0)
+    adb_utils.close_app(cls.app_name, env.controller)
+
+class WootzAppApp(AppSetup):
+  """Class for setting up WootzApp browser."""
+  
+  apk_names = ("WootzApp.apk",)
+  app_name = "WootzApp"
+  
+  @classmethod
+  def setup(cls, env: interface.AsyncEnv) -> None:
+    super().setup(env)
+    
+    # Grant necessary permissions for browser app
+    package = adb_utils.extract_package_name(
+        adb_utils.get_adb_activity(cls.app_name)
+    )
+    adb_utils.grant_permissions(
+        package,
+        "android.permission.POST_NOTIFICATIONS",
+        env.controller,
+    )
+    adb_utils.grant_permissions(
+        package,
+        "android.permission.ACCESS_FINE_LOCATION",
+        env.controller,
+    )
+    adb_utils.grant_permissions(
+        package,
+        "android.permission.ACCESS_COARSE_LOCATION",
+        env.controller,
+    )
+    
+    # Launch the app to complete setup
+    adb_utils.launch_app(cls.app_name, env.controller)
+    time.sleep(4.0)
     adb_utils.close_app(cls.app_name, env.controller)

@@ -85,6 +85,10 @@ def setup_env(
 ) -> None:
   """Performs environment setup and validation."""
   _increase_file_descriptor_limit()
+
+  # Always ensure WootzApp is installed.
+  setup.ensure_wootzapp_installed(env)
+  
   if emulator_setup:
     logging.info('Setting up apps on the emulator.')
     setup.setup_apps(env)

@@ -166,6 +166,9 @@ _PATTERN_TO_ACTIVITY = immutabledict.immutabledict({
     'retro music|retro|retro player': (
         'code.name.monkey.retromusic/.activities.MainActivity'
     ),
+    'wootzapp|wootz|wootz browser|wootzapp browser|WootzApp': (
+        'com.wootzapp.web/com.google.android.apps.chrome.Main'
+    ),
 })
 # pylint: enable=line-too-long
 

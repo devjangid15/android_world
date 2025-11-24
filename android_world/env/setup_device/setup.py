@@ -59,6 +59,7 @@ _APPS = (
     apps.SimpleSMSMessengerApp,
     apps.TasksApp,
     apps.VlcApp,
+    apps.WootzAppApp,
     # keep-sorted end
 )
 
@@ -112,7 +113,12 @@ def download_and_install_apk(
     apk: str, raw_env: env_interface.AndroidEnvInterface
 ) -> None:
   """Downloads APK from remote location and installs it."""
-  path = apps.download_app_data(apk)
+  if apk == "WootzApp.apk":
+    # Use custom GitHub download for Wootzapp
+    path = apps.download_wootzapp_from_github()
+  else:
+    # Use standard GCS download for other apps
+    path = apps.download_app_data(apk)
   adb_utils.install_apk(path, raw_env)
 
 
@@ -157,6 +163,17 @@ def maybe_install_app(
   if not apk_installed:
     raise RuntimeError(f"Failed to download and install APK for {app.app_name}")
 
+def ensure_wootzapp_installed(env: interface.AsyncEnv) -> None:
+  """Ensures WootzApp is installed, regardless of setup_apps flag."""
+  wootzapp = apps.WootzAppApp
+  package_name = wootzapp.package_name()
+  
+  if not is_package_installed(package_name, env):
+    logging.info("WootzApp not found. Installing...")
+    maybe_install_app(wootzapp, env)
+    setup_app(wootzapp, env)
+  else:
+    logging.info("WootzApp is already installed.")
 
 def setup_apps(
     env: interface.AsyncEnv,
@@ -183,6 +200,9 @@ def setup_apps(
   )
   if app_list is None:
     app_list = _APPS
+
+  app_list = tuple(app for app in app_list if app != apps.WootzAppApp)
+
   for app in app_list:
     maybe_install_app(app, env)
     setup_app(app, env)
